@@ -60,12 +60,25 @@ class Plugin(indigo.PluginBase):
     def getChannelNames(self):
         slackToken = self.pluginPrefs['slacktoken'].strip()
         params = urllib.urlencode({'token': slackToken, 'pretty': 1})
-        url = urllib.urlopen("https://slack.com/api/channels.list?%s" % params)
-        url = url.geturl()
+        groupsUrl = urllib.urlopen("https://slack.com/api/groups.list?%s" % params)
+        groupsUrl = groupsUrl.geturl()
 
         self.debugLog(u"Channels URL: %s" % url)
 
-        jc = urllib2.urlopen(url)
+        jg = urllib2.urlopen(groupsUrl)
+        groupString = jg.read()
+        jgl = simplejson.loads(groupString)
+
+        cList = []
+        for i in jgl['channels']:
+            x = i['name']
+            if x not in cList:
+                cList.append(x)
+        
+        channelsUrl = urllib.urlopen("https://slack.com/api/channels.list?%s" % params)
+        channelsUrl = channelsUrl.geturl()
+        
+        jc = urllib2.urlopen(channelsUrl)
         channelString = jc.read()
         jcl = simplejson.loads(channelString)
 
@@ -74,7 +87,7 @@ class Plugin(indigo.PluginBase):
             x = i['name']
             if x not in cList:
                 cList.append(x)
-
+        
         oList = list(cList)
 
         deck = []
@@ -142,8 +155,7 @@ class Plugin(indigo.PluginBase):
         else:
             txtInput = pluginAction.props['text'].strip()
             txtInput = txtInput.strip()
-            while "%%v:" in txtInput:
-                txtInput = self.substituteVariable(txtInput)
+            txtInput = self.substitute(txtInput)
             self.debugLog(u"Text entered: %s" % txtInput)
             # fix issue with special characters
             theText = txtInput.encode('utf8')
