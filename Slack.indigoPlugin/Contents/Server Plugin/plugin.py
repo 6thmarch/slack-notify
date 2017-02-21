@@ -63,26 +63,28 @@ class Plugin(indigo.PluginBase):
         groupsUrl = urllib.urlopen("https://slack.com/api/groups.list?%s" % params)
         groupsUrl = groupsUrl.geturl()
 
-        self.debugLog(u"Channels URL: %s" % url)
+        self.debugLog(u"Groups URL: %s" % groupsUrl)
 
         jg = urllib2.urlopen(groupsUrl)
         groupString = jg.read()
         jgl = simplejson.loads(groupString)
 
         cList = []
-        for i in jgl['channels']:
+        for i in jgl['groups']:
             x = i['name']
             if x not in cList:
                 cList.append(x)
         
         channelsUrl = urllib.urlopen("https://slack.com/api/channels.list?%s" % params)
         channelsUrl = channelsUrl.geturl()
+
+        self.debugLog(u"Channels URL: %s" % channelsUrl)
+
         
         jc = urllib2.urlopen(channelsUrl)
         channelString = jc.read()
         jcl = simplejson.loads(channelString)
 
-        cList = []
         for i in jcl['channels']:
             x = i['name']
             if x not in cList:
